@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
             arriveDate: new Date(city.arriveDate),
             departDate: city.departDate ? new Date(city.departDate) : null,
             order: index,
+            notes: city.notes || null,
           })),
         },
         members: {
