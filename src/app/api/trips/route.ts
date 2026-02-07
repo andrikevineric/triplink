@@ -21,6 +21,11 @@ export async function GET() {
     include: {
       cities: {
         orderBy: { order: 'asc' },
+        include: {
+          activities: {
+            orderBy: [{ date: 'asc' }, { order: 'asc' }],
+          },
+        },
       },
       members: {
         include: {
@@ -84,6 +89,11 @@ export async function POST(request: NextRequest) {
       include: {
         cities: {
           orderBy: { order: 'asc' },
+          include: {
+            activities: {
+              orderBy: [{ date: 'asc' }, { order: 'asc' }],
+            },
+          },
         },
         members: {
           include: {

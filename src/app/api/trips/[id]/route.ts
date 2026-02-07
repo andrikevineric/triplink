@@ -16,7 +16,14 @@ export async function GET(
   const trip = await prisma.trip.findUnique({
     where: { id: params.id },
     include: {
-      cities: { orderBy: { order: 'asc' } },
+      cities: {
+        orderBy: { order: 'asc' },
+        include: {
+          activities: {
+            orderBy: [{ date: 'asc' }, { order: 'asc' }],
+          },
+        },
+      },
       members: {
         include: {
           user: { select: { id: true, name: true } },
@@ -93,7 +100,14 @@ export async function PATCH(
             : undefined,
         },
         include: {
-          cities: { orderBy: { order: 'asc' } },
+          cities: {
+            orderBy: { order: 'asc' },
+            include: {
+              activities: {
+                orderBy: [{ date: 'asc' }, { order: 'asc' }],
+              },
+            },
+          },
           members: {
             include: {
               user: { select: { id: true, name: true } },
