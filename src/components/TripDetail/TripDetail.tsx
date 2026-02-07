@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Trip } from '@/types';
 import { useTripStore } from '@/stores/tripStore';
 import { useAuthStore } from '@/stores/authStore';
+import { calculateDistance, formatDistance } from '@/lib/geo';
 
 interface TripDetailProps {
   trip: Trip;
@@ -183,27 +184,40 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
           {/* Itinerary */}
           <Section title="Itinerary" defaultOpen={true}>
             <div className="space-y-1">
-              {trip.cities.map((city, index) => (
-                <div key={city.id} className="flex gap-3">
-                  <div className="flex flex-col items-center pt-1">
-                    <div
-                      className="w-2.5 h-2.5 rounded-full border-2"
-                      style={{ borderColor: trip.color, backgroundColor: index === 0 ? trip.color : 'transparent' }}
-                    />
-                    {index < trip.cities.length - 1 && (
-                      <div className="w-0.5 flex-1 bg-gray-200 my-1" />
-                    )}
+              {trip.cities.map((city, index) => {
+                const nextCity = trip.cities[index + 1];
+                const distance = nextCity 
+                  ? calculateDistance(city.lat, city.lng, nextCity.lat, nextCity.lng)
+                  : null;
+                
+                return (
+                  <div key={city.id} className="flex gap-3">
+                    <div className="flex flex-col items-center pt-1">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full border-2"
+                        style={{ borderColor: trip.color, backgroundColor: index === 0 ? trip.color : 'transparent' }}
+                      />
+                      {index < trip.cities.length - 1 && (
+                        <div className="w-0.5 flex-1 bg-gray-200 my-1 relative">
+                          {distance && (
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 whitespace-nowrap">
+                              {formatDistance(distance)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 pb-4">
+                      <p className="font-medium text-gray-900">{city.name}</p>
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">{city.country}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatDate(city.arriveDate)}
+                        {city.departDate && ` → ${formatDate(city.departDate)}`}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 pb-4">
-                    <p className="font-medium text-gray-900">{city.name}</p>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">{city.country}</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {formatDate(city.arriveDate)}
-                      {city.departDate && ` → ${formatDate(city.departDate)}`}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Section>
 
