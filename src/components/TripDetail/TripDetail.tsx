@@ -215,6 +215,9 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
                         {formatDate(city.arriveDate)}
                         {city.departDate && ` → ${formatDate(city.departDate)}`}
                       </p>
+                      {city.notes && (
+                        <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded">{city.notes}</p>
+                      )}
                     </div>
                   </div>
                 );
