@@ -5,6 +5,16 @@ export interface User {
   createdAt: string;
 }
 
+export interface Activity {
+  id: string;
+  name: string;
+  date?: string;
+  description?: string;
+  order: number;
+  cityId: string;
+  createdAt: string;
+}
+
 export interface City {
   id: string;
   name: string;
@@ -15,6 +25,7 @@ export interface City {
   departDate?: string;
   order: number;
   notes?: string;
+  activities?: Activity[];
 }
 
 export interface TripMember {

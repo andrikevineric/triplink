@@ -48,6 +48,21 @@ model City {
 
   tripId String
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  activities Activity[]
+}
+
+model Activity {
+  id          String    @id @default(cuid())
+  name        String
+  date        DateTime?
+  description String?
+  order       Int       @default(0)
+
+  cityId String
+  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model TripMember {
