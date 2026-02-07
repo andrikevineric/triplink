@@ -44,6 +44,7 @@ model City {
   arriveDate DateTime
   departDate DateTime?
   order      Int
+  notes      String?
 
   tripId String
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
