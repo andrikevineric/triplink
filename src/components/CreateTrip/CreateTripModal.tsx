@@ -5,12 +5,21 @@ import { useTripStore } from '@/stores/tripStore';
 import { CitySearch } from './CitySearch';
 import { CitySearchResult } from '@/types';
 
+interface ActivityInput {
+  id: string;
+  name: string;
+  date: string;
+  description: string;
+}
+
 interface CityInput {
   id: string;
   city: CitySearchResult | null;
   arriveDate: string;
   departDate: string;
   notes: string;
+  activities: ActivityInput[];
+  isExpanded: boolean;
 }
 
 interface CreateTripModalProps {
@@ -18,10 +27,10 @@ interface CreateTripModalProps {
 }
 
 export function CreateTripModal({ onClose }: CreateTripModalProps) {
-  const { createTrip } = useTripStore();
+  const { createTrip, fetchTrips } = useTripStore();
   const [name, setName] = useState('');
   const [cities, setCities] = useState<CityInput[]>([
-    { id: '1', city: null, arriveDate: '', departDate: '', notes: '' },
+    { id: '1', city: null, arriveDate: '', departDate: '', notes: '', activities: [], isExpanded: false },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +38,7 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
   const addCity = () => {
     setCities([
       ...cities,
-      { id: Date.now().toString(), city: null, arriveDate: '', departDate: '', notes: '' },
+      { id: Date.now().toString(), city: null, arriveDate: '', departDate: '', notes: '', activities: [], isExpanded: false },
     ]);
   };
 
@@ -42,6 +51,64 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
   const updateCity = (id: string, updates: Partial<CityInput>) => {
     setCities(
       cities.map((c) => (c.id === id ? { ...c, ...updates } : c))
+    );
+  };
+
+  const toggleCityExpanded = (id: string) => {
+    setCities(
+      cities.map((c) => (c.id === id ? { ...c, isExpanded: !c.isExpanded } : c))
+    );
+  };
+
+  const addActivity = (cityId: string) => {
+    setCities(
+      cities.map((c) => {
+        if (c.id === cityId) {
+          return {
+            ...c,
+            activities: [
+              ...c.activities,
+              {
+                id: `new-${Date.now()}`,
+                name: '',
+                date: c.arriveDate,
+                description: '',
+              },
+            ],
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const updateActivity = (cityId: string, activityId: string, updates: Partial<ActivityInput>) => {
+    setCities(
+      cities.map((c) => {
+        if (c.id === cityId) {
+          return {
+            ...c,
+            activities: c.activities.map((a) =>
+              a.id === activityId ? { ...a, ...updates } : a
+            ),
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const removeActivity = (cityId: string, activityId: string) => {
+    setCities(
+      cities.map((c) => {
+        if (c.id === cityId) {
+          return {
+            ...c,
+            activities: c.activities.filter((a) => a.id !== activityId),
+          };
+        }
+        return c;
+      })
     );
   };
 
@@ -82,7 +149,7 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
     setIsLoading(true);
 
     try {
-      await createTrip({
+      const trip = await createTrip({
         name: name || `Trip to ${sortedCities[0].city!.name}`,
         cities: sortedCities.map((c) => ({
           name: c.city!.name,
@@ -94,6 +161,32 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
           notes: c.notes || undefined,
         })),
       });
+
+      // Save activities for each city
+      await fetchTrips();
+      
+      for (let i = 0; i < sortedCities.length; i++) {
+        const cityInput = sortedCities[i];
+        const dbCity = trip.cities[i];
+        
+        if (dbCity && cityInput.activities.length > 0) {
+          for (const activity of cityInput.activities) {
+            if (activity.name.trim()) {
+              await fetch(`/api/cities/${dbCity.id}/activities`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: activity.name.trim(),
+                  date: activity.date || null,
+                  description: activity.description.trim() || null,
+                }),
+              });
+            }
+          }
+        }
+      }
+
+      await fetchTrips();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create trip');
@@ -145,77 +238,162 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
               return (
                 <div
                   key={cityInput.id}
-                  className={`p-4 bg-gray-50 rounded-lg space-y-3 border ${
+                  className={`bg-gray-50 rounded-lg border ${
                     cityError ? 'border-red-300' : 'border-transparent'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
-                      Stop {index + 1}
-                    </span>
-                    {cities.length > 1 && (
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">
+                        Stop {index + 1}
+                      </span>
+                      {cities.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeCity(cityInput.id)}
+                          className="text-gray-400 hover:text-red-500 text-sm transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <CitySearch
+                      value={cityInput.city}
+                      onChange={(city) => updateCity(cityInput.id, { city })}
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Arrive
+                        </label>
+                        <input
+                          type="date"
+                          value={cityInput.arriveDate}
+                          onChange={(e) =>
+                            updateCity(cityInput.id, { arriveDate: e.target.value })
+                          }
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Depart (optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={cityInput.departDate}
+                          min={cityInput.arriveDate || undefined}
+                          onChange={(e) =>
+                            updateCity(cityInput.id, { departDate: e.target.value })
+                          }
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Notes (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={cityInput.notes}
+                        onChange={(e) =>
+                          updateCity(cityInput.id, { notes: e.target.value })
+                        }
+                        placeholder="Hotel, flight info, tips..."
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                      />
+                    </div>
+
+                    {cityError && (
+                      <p className="text-red-500 text-xs">{cityError}</p>
+                    )}
+
+                    {/* Activities Toggle */}
+                    {cityInput.city && (
                       <button
                         type="button"
-                        onClick={() => removeCity(cityInput.id)}
-                        className="text-gray-400 hover:text-red-500 text-sm transition-colors"
+                        onClick={() => toggleCityExpanded(cityInput.id)}
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
                       >
-                        Remove
+                        <svg
+                          className={`w-4 h-4 transition-transform ${cityInput.isExpanded ? 'rotate-90' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        Activities ({cityInput.activities.length})
                       </button>
                     )}
                   </div>
 
-                  <CitySearch
-                    value={cityInput.city}
-                    onChange={(city) => updateCity(cityInput.id, { city })}
-                  />
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Arrive
-                      </label>
-                      <input
-                        type="date"
-                        value={cityInput.arriveDate}
-                        onChange={(e) =>
-                          updateCity(cityInput.id, { arriveDate: e.target.value })
-                        }
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      />
+                  {/* Activities Section */}
+                  {cityInput.isExpanded && cityInput.city && (
+                    <div className="border-t border-gray-200 p-4 bg-white/50 space-y-3">
+                      {cityInput.activities.length === 0 ? (
+                        <p className="text-sm text-gray-400 italic">No activities yet</p>
+                      ) : (
+                        cityInput.activities.map((activity, actIndex) => (
+                          <div
+                            key={activity.id}
+                            className="p-3 bg-white rounded-lg border border-gray-200 space-y-2"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-400">Activity {actIndex + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeActivity(cityInput.id, activity.id)}
+                                className="text-gray-400 hover:text-red-500 text-xs transition-colors"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              value={activity.name}
+                              onChange={(e) => updateActivity(cityInput.id, activity.id, { name: e.target.value })}
+                              placeholder="Activity name (e.g., Visit Tiananmen)"
+                              className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Date (optional)</label>
+                                <input
+                                  type="date"
+                                  value={activity.date}
+                                  min={cityInput.arriveDate || undefined}
+                                  max={cityInput.departDate || undefined}
+                                  onChange={(e) => updateActivity(cityInput.id, activity.id, { date: e.target.value })}
+                                  className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Description (optional)</label>
+                                <input
+                                  type="text"
+                                  value={activity.description}
+                                  onChange={(e) => updateActivity(cityInput.id, activity.id, { description: e.target.value })}
+                                  placeholder="Brief description..."
+                                  className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => addActivity(cityInput.id)}
+                        className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 text-sm transition-colors"
+                      >
+                        + Add activity
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Depart (optional)
-                      </label>
-                      <input
-                        type="date"
-                        value={cityInput.departDate}
-                        min={cityInput.arriveDate || undefined}
-                        onChange={(e) =>
-                          updateCity(cityInput.id, { departDate: e.target.value })
-                        }
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">
-                      Notes (optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={cityInput.notes}
-                      onChange={(e) =>
-                        updateCity(cityInput.id, { notes: e.target.value })
-                      }
-                      placeholder="Hotel, flight info, tips..."
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
-                    />
-                  </div>
-
-                  {cityError && (
-                    <p className="text-red-500 text-xs">{cityError}</p>
                   )}
                 </div>
               );
