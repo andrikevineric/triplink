@@ -14,6 +14,7 @@ interface TripState {
   deleteTrip: (id: string) => Promise<void>;
   leaveTrip: (id: string) => Promise<void>;
   revokeLink: (id: string) => Promise<string>;
+  duplicateTrip: (tripId: string) => Promise<Trip>;
   joinTrip: (code: string) => Promise<Trip>;
 }
 
