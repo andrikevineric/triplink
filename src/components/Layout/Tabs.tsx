@@ -7,26 +7,26 @@ interface TabsProps {
 
 export function Tabs({ activeTab, onTabChange }: TabsProps) {
   return (
-    <div className="flex gap-1 bg-slate-800 p-1 rounded-lg">
+    <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
       <button
         onClick={() => onTabChange('trips')}
         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
           activeTab === 'trips'
-            ? 'bg-primary text-white'
-            : 'text-slate-400 hover:text-white'
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
         }`}
       >
-        🌍 Trips
+        Trips
       </button>
       <button
         onClick={() => onTabChange('me')}
         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
           activeTab === 'me'
-            ? 'bg-primary text-white'
-            : 'text-slate-400 hover:text-white'
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
         }`}
       >
-        👤 Me
+        Account
       </button>
     </div>
   );
