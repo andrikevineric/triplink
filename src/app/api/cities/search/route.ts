@@ -18,10 +18,12 @@ export async function GET(request: NextRequest) {
           limit: '5',
           featuretype: 'city',
           addressdetails: '1',
+          'accept-language': 'en',
         }),
       {
         headers: {
           'User-Agent': 'TripLink/1.0',
+          'Accept-Language': 'en',
         },
       }
     );
@@ -32,13 +34,19 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    const results = data.map((item: any) => ({
-      name: item.address?.city || item.address?.town || item.address?.village || item.name,
-      country: item.address?.country || '',
-      lat: parseFloat(item.lat),
-      lng: parseFloat(item.lon),
-      displayName: item.display_name,
-    }));
+    const results = data.map((item: any) => {
+      // Get English name, fallback to address fields
+      const cityName = item.address?.city || item.address?.town || item.address?.village || item.name;
+      const countryName = item.address?.country || '';
+      
+      return {
+        name: cityName,
+        country: countryName,
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        displayName: `${cityName}, ${countryName}`,
+      };
+    });
 
     return NextResponse.json(results);
   } catch (error) {

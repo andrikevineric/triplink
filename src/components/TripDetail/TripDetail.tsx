@@ -70,7 +70,7 @@ function ConfirmModal({
   onCancel: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-4 z-[9999]">
       <div className="bg-white rounded-xl p-6 max-w-sm w-full border border-gray-200 shadow-xl">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-500 text-sm mb-6">{message}</p>
