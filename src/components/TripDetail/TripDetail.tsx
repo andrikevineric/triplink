@@ -238,6 +238,25 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
                       {city.notes && (
                         <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded">{city.notes}</p>
                       )}
+                      {/* Activities */}
+                      {city.activities && city.activities.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Activities</p>
+                          {city.activities.map((activity) => (
+                            <div key={activity.id} className="flex items-start gap-2 pl-2 border-l-2 border-blue-200">
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-800">{activity.name}</p>
+                                {activity.date && (
+                                  <p className="text-xs text-gray-400">{formatDate(activity.date)}</p>
+                                )}
+                                {activity.description && (
+                                  <p className="text-xs text-gray-500 mt-0.5">{activity.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
