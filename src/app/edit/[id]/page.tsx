@@ -12,6 +12,7 @@ interface CityInput {
   city: CitySearchResult | null;
   arriveDate: string;
   departDate: string;
+  notes: string;
 }
 
 export default function EditTripPage({ params }: { params: { id: string } }) {
@@ -50,6 +51,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
         },
         arriveDate: c.arriveDate.split('T')[0],
         departDate: c.departDate ? c.departDate.split('T')[0] : '',
+        notes: c.notes || '',
       })));
     }
   }, [trips, params.id]);
@@ -57,7 +59,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   const addCity = () => {
     setCities([
       ...cities,
-      { id: Date.now().toString(), city: null, arriveDate: '', departDate: '' },
+      { id: Date.now().toString(), city: null, arriveDate: '', departDate: '', notes: '' },
     ]);
   };
 
@@ -119,6 +121,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
           lng: c.city!.lng,
           arriveDate: c.arriveDate,
           departDate: c.departDate || undefined,
+          notes: c.notes || undefined,
         })),
       });
       router.push('/');
