@@ -199,6 +199,21 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Notes (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={cityInput.notes}
+                      onChange={(e) =>
+                        updateCity(cityInput.id, { notes: e.target.value })
+                      }
+                      placeholder="Hotel, flight info, tips..."
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                    />
+                  </div>
+
                   {cityError && (
                     <p className="text-red-500 text-xs">{cityError}</p>
                   )}
