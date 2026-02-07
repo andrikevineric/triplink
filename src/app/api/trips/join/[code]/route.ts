@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logTripAction } from '@/lib/tripLog';
 
 // GET /api/trips/join/[code] - Preview trip (public)
 export async function GET(
@@ -80,6 +81,9 @@ export async function POST(
       role: 'member',
     },
   });
+
+  // Log the join action
+  await logTripAction(trip.id, user.id, 'joined');
 
   const fullTrip = await prisma.trip.findUnique({
     where: { id: trip.id },

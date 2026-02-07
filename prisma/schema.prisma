@@ -16,6 +16,7 @@ model User {
 
   createdTrips Trip[]       @relation("Creator")
   memberships  TripMember[]
+  tripLogs     TripLog[]
 }
 
 model Trip {
@@ -30,6 +31,7 @@ model Trip {
 
   cities  City[]
   members TripMember[]
+  logs    TripLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -62,6 +64,20 @@ model Activity {
   cityId String
   city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
 
+  createdAt DateTime @default(now())
+}
+
+model TripLog {
+  id        String   @id @default(cuid())
+  action    String   // created, updated, joined, left, activity_added, etc.
+  details   String?  // JSON string with additional details
+  
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
   createdAt DateTime @default(now())
 }
 

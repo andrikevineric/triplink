@@ -70,3 +70,16 @@ export interface CitySearchResult {
   lng: number;
   displayName: string;
 }
+
+export interface TripLog {
+  id: string;
+  action: string;
+  details?: string;
+  tripId: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+  };
+  createdAt: string;
+}

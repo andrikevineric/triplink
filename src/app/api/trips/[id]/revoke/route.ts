@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { nanoid } from 'nanoid';
+import { logTripAction } from '@/lib/tripLog';
 
 // POST /api/trips/[id]/revoke - Revoke link and generate new one
 export async function POST(
@@ -35,6 +36,9 @@ export async function POST(
     where: { id: params.id },
     data: { shareCode: newCode },
   });
+
+  // Log the revoke action
+  await logTripAction(params.id, user.id, 'link_revoked');
 
   return NextResponse.json({ shareCode: newCode });
 }

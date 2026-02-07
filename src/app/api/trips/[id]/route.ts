@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logTripAction } from '@/lib/tripLog';
 
 // GET /api/trips/[id] - Get trip details
 export async function GET(
@@ -115,6 +116,12 @@ export async function PATCH(
           },
         },
       });
+    });
+
+    // Log the update action
+    await logTripAction(params.id, user.id, 'updated', {
+      name: updated.name,
+      citiesCount: updated.cities.length,
     });
 
     return NextResponse.json(updated);

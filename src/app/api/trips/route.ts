@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { nanoid } from 'nanoid';
 import { generateTripColor } from '@/lib/geo';
+import { logTripAction } from '@/lib/tripLog';
 
 // GET /api/trips - List user's trips
 export async function GET() {
@@ -103,6 +104,12 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+    });
+
+    // Log the action
+    await logTripAction(trip.id, user.id, 'created', {
+      name: tripName,
+      citiesCount: cities.length,
     });
 
     return NextResponse.json(trip);

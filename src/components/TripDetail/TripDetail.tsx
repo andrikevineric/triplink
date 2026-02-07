@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Trip } from '@/types';
+import { useState, useEffect } from 'react';
+import { Trip, TripLog } from '@/types';
 import { useTripStore } from '@/stores/tripStore';
 import { useAuthStore } from '@/stores/authStore';
 import { calculateDistance, formatDistance } from '@/lib/geo';
@@ -10,6 +10,19 @@ import { downloadICal } from '@/lib/ical';
 interface TripDetailProps {
   trip: Trip;
   onClose: () => void;
+}
+
+function formatLogAction(action: string): string {
+  const actions: Record<string, string> = {
+    created: 'created this trip',
+    updated: 'updated the trip',
+    joined: 'joined the trip',
+    left: 'left the trip',
+    link_revoked: 'revoked the share link',
+    activity_added: 'added an activity',
+    activity_removed: 'removed an activity',
+  };
+  return actions[action] || action;
 }
 
 function Section({ 
@@ -85,6 +98,24 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
   const [copied, setCopied] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [logs, setLogs] = useState<TripLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      setLogsLoading(true);
+      try {
+        const res = await fetch(`/api/trips/${trip.id}/logs`);
+        if (res.ok) {
+          const data = await res.json();
+          setLogs(data);
+        }
+      } finally {
+        setLogsLoading(false);
+      }
+    };
+    fetchLogs();
+  }, [trip.id]);
 
   const isCreator = user?.id === trip.creatorId;
   const shareUrl = typeof window !== 'undefined' 
@@ -318,6 +349,39 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
                 </button>
               )}
             </div>
+          </Section>
+
+          {/* Activity Log */}
+          <Section title="Activity Log" defaultOpen={false}>
+            {logsLoading ? (
+              <p className="text-sm text-gray-400">Loading...</p>
+            ) : logs.length === 0 ? (
+              <p className="text-sm text-gray-400 italic">No activity yet</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {logs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-2 text-sm">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600 flex-shrink-0">
+                      {log.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-700">
+                        <span className="font-medium">{log.user.name}</span>{' '}
+                        {formatLogAction(log.action)}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(log.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Section>
 
           {/* Actions */}

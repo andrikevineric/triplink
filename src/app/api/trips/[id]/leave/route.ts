@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logTripAction } from '@/lib/tripLog';
 
 // POST /api/trips/[id]/leave - Leave a trip
 export async function POST(
@@ -31,6 +32,9 @@ export async function POST(
       { status: 400 }
     );
   }
+
+  // Log the leave action before any changes
+  await logTripAction(params.id, user.id, 'left');
 
   // If creator is leaving, transfer ownership
   if (trip.creatorId === user.id) {
