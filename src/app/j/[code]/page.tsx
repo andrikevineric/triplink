@@ -56,21 +56,24 @@ export default function JoinPage({ params }: { params: { code: string } }) {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="text-slate-400">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-500">Loading...</span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Oops!</h1>
-          <p className="text-slate-400 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Trip Not Found</h1>
+          <p className="text-gray-500 mb-6">{error}</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-primary hover:bg-blue-600 rounded-lg"
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
           >
             Go Home
           </button>
@@ -89,16 +92,16 @@ export default function JoinPage({ params }: { params: { code: string } }) {
   const firstDate = trip.cities[0]?.arriveDate;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            <span className="text-primary">Trip</span>Link
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            TripLink
           </h1>
-          <p className="text-slate-400">You've been invited to join a trip!</p>
+          <p className="text-gray-500">You've been invited to join a trip</p>
         </div>
 
-        <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           {/* Trip preview */}
           <div className="mb-6">
             <div className="flex items-start gap-3 mb-4">
@@ -107,15 +110,15 @@ export default function JoinPage({ params }: { params: { code: string } }) {
                 style={{ backgroundColor: trip.color }}
               />
               <div>
-                <h2 className="text-xl font-bold">{trip.name}</h2>
-                <p className="text-slate-400 text-sm">{cities}</p>
+                <h2 className="text-xl font-bold text-gray-900">{trip.name}</h2>
+                <p className="text-gray-500 text-sm">{cities}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-slate-500">Starting</p>
-                <p>
+                <p className="text-gray-400">Starting</p>
+                <p className="text-gray-900">
                   {firstDate
                     ? new Date(firstDate).toLocaleDateString('en-US', {
                         month: 'short',
@@ -126,25 +129,28 @@ export default function JoinPage({ params }: { params: { code: string } }) {
                 </p>
               </div>
               <div>
-                <p className="text-slate-500">Travelers</p>
-                <p>{trip.members.length} people</p>
+                <p className="text-gray-400">Travelers</p>
+                <p className="text-gray-900">{trip.members.length} people</p>
               </div>
             </div>
           </div>
 
           {/* Travelers list */}
           <div className="mb-6">
-            <p className="text-sm text-slate-500 mb-2">Who's going</p>
+            <p className="text-sm text-gray-400 mb-2">Who's going</p>
             <div className="flex flex-wrap gap-2">
               {trip.members.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-full text-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full text-sm"
                 >
-                  <div className="w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-xs">
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-xs text-white"
+                    style={{ backgroundColor: trip.color }}
+                  >
                     {member.user.name.charAt(0)}
                   </div>
-                  {member.user.name}
+                  <span className="text-gray-700">{member.user.name}</span>
                 </div>
               ))}
             </div>
@@ -154,13 +160,13 @@ export default function JoinPage({ params }: { params: { code: string } }) {
           <button
             onClick={handleJoin}
             disabled={isJoining}
-            className="w-full py-3 bg-primary hover:bg-blue-600 disabled:opacity-50 rounded-lg font-medium"
+            className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
           >
-            {isJoining ? 'Joining...' : 'Join This Trip'}
+            {isJoining ? 'Joining...' : 'Join Trip'}
           </button>
         </div>
 
-        <p className="text-center text-slate-600 text-sm mt-4">
+        <p className="text-center text-gray-400 text-sm mt-4">
           Joining as {user.name}
         </p>
       </div>
