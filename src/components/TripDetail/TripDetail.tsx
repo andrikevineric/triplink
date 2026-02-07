@@ -176,9 +176,29 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
         {/* Trip header */}
         <div className="p-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-1">{trip.name}</h2>
-          <p className="text-gray-500 text-sm">
-            {trip.cities.length} destination{trip.cities.length !== 1 ? 's' : ''} · {trip.members.length} traveler{trip.members.length !== 1 ? 's' : ''}
-          </p>
+          {(() => {
+            let totalDistance = 0;
+            for (let i = 0; i < trip.cities.length - 1; i++) {
+              totalDistance += calculateDistance(
+                trip.cities[i].lat, trip.cities[i].lng,
+                trip.cities[i + 1].lat, trip.cities[i + 1].lng
+              );
+            }
+            const firstDate = trip.cities[0]?.arriveDate;
+            const lastCity = trip.cities[trip.cities.length - 1];
+            const lastDate = lastCity?.departDate || lastCity?.arriveDate;
+            const days = firstDate && lastDate 
+              ? Math.ceil((new Date(lastDate).getTime() - new Date(firstDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+              : null;
+            
+            return (
+              <p className="text-gray-500 text-sm">
+                {trip.cities.length} destination{trip.cities.length !== 1 ? 's' : ''} · {trip.members.length} traveler{trip.members.length !== 1 ? 's' : ''}
+                {totalDistance > 0 && ` · ${formatDistance(totalDistance)} total`}
+                {days && ` · ${days} day${days !== 1 ? 's' : ''}`}
+              </p>
+            );
+          })()}
         </div>
 
         <div className="p-4 space-y-2">
