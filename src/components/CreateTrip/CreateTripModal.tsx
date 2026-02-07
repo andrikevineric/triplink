@@ -34,6 +34,7 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggestingFor, setSuggestingFor] = useState<string | null>(null);
 
   const addCity = () => {
     setCities([
@@ -110,6 +111,43 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
         return c;
       })
     );
+  };
+
+  const suggestActivities = async (cityId: string, cityName: string, country: string) => {
+    setSuggestingFor(cityId);
+    try {
+      // For new trips, use generic suggestions
+      const suggestions = [
+        { name: `Explore ${cityName} Old Town`, description: 'Walk through historic streets and discover local architecture' },
+        { name: 'Visit Local Markets', description: 'Experience authentic local food and crafts' },
+        { name: 'Try Local Cuisine', description: `Sample traditional ${country} dishes at recommended restaurants` },
+        { name: 'Cultural Museum Visit', description: 'Learn about local history and culture' },
+        { name: 'Scenic Viewpoint', description: 'Find the best panoramic views of the city' },
+      ];
+
+      const cityInput = cities.find(c => c.id === cityId);
+      
+      setCities(
+        cities.map((c) => {
+          if (c.id === cityId) {
+            const newActivities = suggestions.map((s, i) => ({
+              id: `new-${Date.now()}-${i}`,
+              name: s.name,
+              date: c.arriveDate,
+              description: s.description,
+            }));
+            return {
+              ...c,
+              activities: [...c.activities, ...newActivities],
+              isExpanded: true,
+            };
+          }
+          return c;
+        })
+      );
+    } finally {
+      setSuggestingFor(null);
+    }
   };
 
   const validateDates = (arrive: string, depart: string): string | null => {
@@ -386,13 +424,38 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
                           </div>
                         ))
                       )}
-                      <button
-                        type="button"
-                        onClick={() => addActivity(cityInput.id)}
-                        className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 text-sm transition-colors"
-                      >
-                        + Add activity
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => addActivity(cityInput.id)}
+                          className="flex-1 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 text-sm transition-colors"
+                        >
+                          + Add activity
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => suggestActivities(cityInput.id, cityInput.city!.name, cityInput.city!.country)}
+                          disabled={suggestingFor === cityInput.id}
+                          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                        >
+                          {suggestingFor === cityInput.id ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              Loading...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              AI Suggest
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
