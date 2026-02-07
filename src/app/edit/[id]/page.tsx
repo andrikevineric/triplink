@@ -34,7 +34,6 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
     }
   }, [user, fetchTrips]);
 
-  // Load trip data
   useEffect(() => {
     const foundTrip = trips.find(t => t.id === params.id);
     if (foundTrip) {
@@ -77,7 +76,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   const validateDates = (arrive: string, depart: string): string | null => {
     if (!arrive || !depart) return null;
     if (new Date(depart) < new Date(arrive)) {
-      return 'Departure date cannot be before arrival date';
+      return 'Departure cannot be before arrival';
     }
     return null;
   };
@@ -92,7 +91,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
 
     const validCities = cities.filter((c) => c.city && c.arriveDate);
     if (validCities.length === 0) {
-      setError('Add at least one city with a date');
+      setError('Add at least one destination with a date');
       return;
     }
 
@@ -104,7 +103,6 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
       }
     }
 
-    // Sort cities by arrival date
     const sortedCities = [...validCities].sort((a, b) => 
       new Date(a.arriveDate).getTime() - new Date(b.arriveDate).getTime()
     );
@@ -133,8 +131,11 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="text-slate-400">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-500">Loading...</span>
+        </div>
       </div>
     );
   }
@@ -146,21 +147,21 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
 
   if (!trip) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="text-slate-400">Loading trip...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">Loading trip...</div>
       </div>
     );
   }
 
   if (trip.creatorId !== user.id) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-slate-400 mb-6">Only the organizer can edit this trip.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-500 mb-6">Only the organizer can edit this trip.</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-primary hover:bg-blue-600 rounded-lg"
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
           >
             Go Home
           </button>
@@ -170,27 +171,26 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-slate-800 p-4">
+      <header className="border-b border-gray-200 p-4 bg-white">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-gray-500 hover:text-gray-700 transition-colors"
           >
-            ← Cancel
+            Cancel
           </button>
-          <h1 className="font-semibold">Edit Trip</h1>
-          <div className="w-16" /> {/* Spacer */}
+          <h1 className="font-semibold text-gray-900">Edit Trip</h1>
+          <div className="w-16" />
         </div>
       </header>
 
       {/* Form */}
       <main className="max-w-2xl mx-auto p-4">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Trip name */}
           <div>
-            <label className="block text-sm text-slate-400 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Trip name
             </label>
             <input
@@ -198,13 +198,12 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Summer in Japan"
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:border-primary"
+              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             />
           </div>
 
-          {/* Cities */}
           <div className="space-y-4">
-            <label className="block text-sm text-slate-400">
+            <label className="block text-sm font-medium text-gray-700">
               Destinations
             </label>
             
@@ -213,19 +212,17 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
               return (
                 <div
                   key={cityInput.id}
-                  className={`p-4 bg-slate-900 rounded-lg space-y-3 border ${
-                    cityError ? 'border-red-500/50' : 'border-slate-800'
+                  className={`p-4 bg-white rounded-lg space-y-3 border ${
+                    cityError ? 'border-red-300' : 'border-gray-200'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">
-                      Stop {index + 1}
-                    </span>
+                    <span className="text-sm text-gray-500">Stop {index + 1}</span>
                     {cities.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeCity(cityInput.id)}
-                        className="text-slate-500 hover:text-red-400 text-sm transition-colors"
+                        className="text-gray-400 hover:text-red-500 text-sm transition-colors"
                       >
                         Remove
                       </button>
@@ -239,37 +236,27 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-slate-500 mb-1">
-                        Arrive
-                      </label>
+                      <label className="block text-xs text-gray-500 mb-1">Arrive</label>
                       <input
                         type="date"
                         value={cityInput.arriveDate}
-                        onChange={(e) =>
-                          updateCity(cityInput.id, { arriveDate: e.target.value })
-                        }
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:outline-none focus:border-primary"
+                        onChange={(e) => updateCity(cityInput.id, { arriveDate: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-500 mb-1">
-                        Depart (optional)
-                      </label>
+                      <label className="block text-xs text-gray-500 mb-1">Depart (optional)</label>
                       <input
                         type="date"
                         value={cityInput.departDate}
                         min={cityInput.arriveDate || undefined}
-                        onChange={(e) =>
-                          updateCity(cityInput.id, { departDate: e.target.value })
-                        }
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:outline-none focus:border-primary"
+                        onChange={(e) => updateCity(cityInput.id, { departDate: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                       />
                     </div>
                   </div>
 
-                  {cityError && (
-                    <p className="text-red-400 text-xs">{cityError}</p>
-                  )}
+                  {cityError && <p className="text-red-500 text-xs">{cityError}</p>}
                 </div>
               );
             })}
@@ -277,21 +264,20 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
             <button
               type="button"
               onClick={addCity}
-              className="w-full py-3 border border-dashed border-slate-700 rounded-lg text-slate-400 hover:border-primary hover:text-primary transition-colors"
+              className="w-full py-3 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
             >
               + Add another destination
             </button>
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm bg-red-950/20 px-3 py-2 rounded-lg">{error}</p>
+            <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-primary hover:bg-blue-600 disabled:opacity-50 rounded-lg font-medium transition-colors"
+            className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
           >
             {isLoading ? 'Saving...' : 'Save Changes'}
           </button>
