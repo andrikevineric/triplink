@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { calculateDistance, formatDistance } from '@/lib/geo';
 import { downloadICal } from '@/lib/ical';
 import { exportTripToPDF } from '@/lib/pdf';
+import { shareTripImage } from '@/lib/shareImage';
 
 interface TripDetailProps {
   trip: Trip;
@@ -101,6 +102,7 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [logs, setLogs] = useState<TripLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -150,6 +152,15 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
       onClose();
     } finally {
       setIsDuplicating(false);
+    }
+  };
+
+  const handleShareImage = async () => {
+    setIsGeneratingImage(true);
+    try {
+      await shareTripImage(trip);
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -446,6 +457,13 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
           className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200"
         >
           Export to PDF
+        </button>
+        <button
+          onClick={handleShareImage}
+          disabled={isGeneratingImage}
+          className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200 disabled:opacity-50"
+        >
+          {isGeneratingImage ? 'Generating...' : 'Share as Image'}
         </button>
       </div>
 
