@@ -11,14 +11,13 @@ import { CreateTripModal } from '@/components/CreateTrip/CreateTripModal';
 import { Tabs } from '@/components/Layout/Tabs';
 import { UserProfile } from '@/components/Profile/UserProfile';
 
-// Dynamically import Globe to avoid SSR issues with Three.js
-const Globe = dynamic(() => import('@/components/Globe/Globe').then(mod => mod.Globe), {
+const TripMap = dynamic(() => import('@/components/Map/TripMap').then(mod => mod.TripMap), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full bg-slate-950">
+    <div className="flex items-center justify-center h-full bg-gray-50">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <span className="text-slate-400 text-sm">Loading globe...</span>
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-gray-500 text-sm">Loading map...</span>
       </div>
     </div>
   ),
@@ -42,10 +41,10 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-slate-400">Loading...</span>
+          <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-500">Loading...</span>
         </div>
       </div>
     );
@@ -58,11 +57,11 @@ export default function Home() {
   const selectedTrip = trips.find(t => t.id === selectedTripId);
 
   return (
-    <main className="h-screen flex flex-col bg-slate-950">
+    <main className="h-screen flex flex-col bg-white">
       {/* Header */}
-      <header className="flex-shrink-0 px-4 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/50 backdrop-blur-sm">
-        <h1 className="text-xl font-semibold">
-          <span className="text-primary">Trip</span>Link
+      <header className="flex-shrink-0 px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-white">
+        <h1 className="text-xl font-semibold text-gray-900">
+          TripLink
         </h1>
         <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
       </header>
@@ -71,44 +70,41 @@ export default function Home() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {activeTab === 'trips' ? (
           <>
-            {/* Globe Section */}
+            {/* Map Section */}
             <div className="h-[50vh] lg:h-full lg:flex-1 relative">
-              <Globe
+              <TripMap
                 trips={trips}
                 selectedTripId={selectedTripId}
                 onSelectTrip={selectTrip}
               />
               
-              {/* FAB with tooltip */}
-              <div className="absolute bottom-4 right-4 group">
+              {/* Add Trip Button */}
+              <div className="absolute bottom-4 right-4">
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="w-14 h-14 bg-primary hover:bg-blue-500 hover:scale-105 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center text-2xl transition-all duration-200"
-                  title="Add destination"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-lg transition-colors"
+                  title="Add trip"
                 >
-                  +
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="font-medium">New Trip</span>
                 </button>
-                {/* Tooltip */}
-                <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <div className="bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg whitespace-nowrap border border-slate-700 shadow-xl">
-                    Where are you going next?
-                  </div>
-                </div>
               </div>
 
-              {/* Empty state overlay */}
+              {/* Empty state */}
               {trips.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-gray-50/80">
                   <div className="text-center">
-                    <p className="text-slate-400 text-lg mb-2">No trips yet</p>
-                    <p className="text-slate-500 text-sm">Click the + button to plan your first adventure</p>
+                    <p className="text-gray-600 text-lg font-medium mb-1">No trips yet</p>
+                    <p className="text-gray-400 text-sm">Click "New Trip" to plan your first adventure</p>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Trip List / Detail Section */}
-            <div className="flex-1 lg:w-96 lg:flex-none border-t lg:border-t-0 lg:border-l border-slate-800 overflow-hidden flex flex-col bg-slate-950">
+            <div className="flex-1 lg:w-96 lg:flex-none border-t lg:border-t-0 lg:border-l border-gray-200 overflow-hidden flex flex-col bg-white">
               {selectedTrip ? (
                 <TripDetail
                   trip={selectedTrip}
