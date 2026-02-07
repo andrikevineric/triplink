@@ -3,38 +3,72 @@
 @tailwind utilities;
 
 :root {
-  --foreground: #F8FAFC;
-  --background: #020617;
+  --foreground: #111827;
+  --background: #ffffff;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
 
-/* Custom scrollbar */
+/* Leaflet custom styles */
+.custom-tooltip {
+  background: white !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  font-family: inherit !important;
+}
+
+.custom-tooltip::before {
+  border-top-color: white !important;
+}
+
+.leaflet-container {
+  font-family: inherit !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  background: white !important;
+  color: #374151 !important;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #F9FAFB !important;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #F3F4F6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: #D1D5DB;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #9CA3AF;
 }
 
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Focus states */
+input:focus, button:focus, select:focus, textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #3B82F6;
 }
