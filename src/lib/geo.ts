@@ -1,0 +1,62 @@
+import * as THREE from 'three';
+
+const GLOBE_RADIUS = 1;
+
+/**
+ * Convert latitude/longitude to 3D position on a sphere
+ */
+export function latLngToVector3(
+  lat: number,
+  lng: number,
+  altitude: number = 0
+): THREE.Vector3 {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lng + 180) * (Math.PI / 180);
+
+  const r = GLOBE_RADIUS + altitude;
+
+  const x = -r * Math.sin(phi) * Math.cos(theta);
+  const y = r * Math.cos(phi);
+  const z = r * Math.sin(phi) * Math.sin(theta);
+
+  return new THREE.Vector3(x, y, z);
+}
+
+/**
+ * Calculate the midpoint between two lat/lng positions, lifted off the surface
+ * for creating curved arcs
+ */
+export function getArcMidpoint(
+  from: { lat: number; lng: number },
+  to: { lat: number; lng: number }
+): THREE.Vector3 {
+  const startVec = latLngToVector3(from.lat, from.lng);
+  const endVec = latLngToVector3(to.lat, to.lng);
+
+  // Midpoint on the surface
+  const midVec = startVec.clone().add(endVec).multiplyScalar(0.5);
+
+  // Lift it off the surface based on distance
+  const distance = startVec.distanceTo(endVec);
+  const altitude = Math.min(distance * 0.5, 0.4); // Cap arc height
+  midVec.normalize().multiplyScalar(GLOBE_RADIUS + altitude);
+
+  return midVec;
+}
+
+/**
+ * Generate a random pleasing color for trips
+ */
+export function generateTripColor(): string {
+  const colors = [
+    '#3B82F6', // blue
+    '#10B981', // emerald
+    '#F59E0B', // amber
+    '#EF4444', // red
+    '#8B5CF6', // violet
+    '#EC4899', // pink
+    '#06B6D4', // cyan
+    '#F97316', // orange
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}

@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  token     String   @unique @default(cuid())
+  createdAt DateTime @default(now())
+
+  createdTrips Trip[]       @relation("Creator")
+  memberships  TripMember[]
+}
+
+model Trip {
+  id              String   @id @default(cuid())
+  name            String
+  shareCode       String   @unique
+  shareCodeActive Boolean  @default(true)
+  color           String   @default("#3B82F6")
+
+  creatorId String
+  creator   User   @relation("Creator", fields: [creatorId], references: [id])
+
+  cities  City[]
+  members TripMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model City {
+  id         String    @id @default(cuid())
+  name       String
+  country    String
+  lat        Float
+  lng        Float
+  arriveDate DateTime
+  departDate DateTime?
+  order      Int
+
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
+
+model TripMember {
+  id       String   @id @default(cuid())
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([tripId, userId])
+}
