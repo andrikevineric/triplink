@@ -123,6 +123,36 @@ export const useTripStore = create<TripState>((set, get) => ({
     return shareCode;
   },
 
+  duplicateTrip: async (tripId: string) => {
+    const trip = get().trips.find(t => t.id === tripId);
+    if (!trip) throw new Error('Trip not found');
+
+    const res = await fetch('/api/trips', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: `${trip.name} (Copy)`,
+        cities: trip.cities.map((c) => ({
+          name: c.name,
+          country: c.country,
+          lat: c.lat,
+          lng: c.lng,
+          arriveDate: c.arriveDate,
+          departDate: c.departDate || undefined,
+        })),
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to duplicate trip');
+    }
+
+    const newTrip = await res.json();
+    set((state) => ({ trips: [newTrip, ...state.trips] }));
+    return newTrip;
+  },
+
   joinTrip: async (code) => {
     const res = await fetch(`/api/trips/join/${code}`, { method: 'POST' });
 
