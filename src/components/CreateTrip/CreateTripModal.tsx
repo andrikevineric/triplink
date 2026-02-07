@@ -10,6 +10,7 @@ interface CityInput {
   city: CitySearchResult | null;
   arriveDate: string;
   departDate: string;
+  notes: string;
 }
 
 interface CreateTripModalProps {
@@ -20,7 +21,7 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
   const { createTrip } = useTripStore();
   const [name, setName] = useState('');
   const [cities, setCities] = useState<CityInput[]>([
-    { id: '1', city: null, arriveDate: '', departDate: '' },
+    { id: '1', city: null, arriveDate: '', departDate: '', notes: '' },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
   const addCity = () => {
     setCities([
       ...cities,
-      { id: Date.now().toString(), city: null, arriveDate: '', departDate: '' },
+      { id: Date.now().toString(), city: null, arriveDate: '', departDate: '', notes: '' },
     ]);
   };
 
@@ -90,6 +91,7 @@ export function CreateTripModal({ onClose }: CreateTripModalProps) {
           lng: c.city!.lng,
           arriveDate: c.arriveDate,
           departDate: c.departDate || undefined,
+          notes: c.notes || undefined,
         })),
       });
       onClose();
