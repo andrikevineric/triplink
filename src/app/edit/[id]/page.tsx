@@ -35,7 +35,6 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   const [cities, setCities] = useState<CityInput[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [suggestingFor, setSuggestingFor] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -162,54 +161,10 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
     );
   };
 
-  const suggestActivities = async (cityId: string, cityName: string, country: string) => {
-    setSuggestingFor(cityId);
-    try {
-      // Use the city's database ID if it exists, otherwise use a mock endpoint
-      const cityInput = cities.find(c => c.id === cityId);
-      const dbCityId = cityInput?.id.startsWith('new-') ? null : cityInput?.id;
-      
-      let suggestions;
-      if (dbCityId) {
-        const res = await fetch(`/api/cities/${dbCityId}/suggest`, { method: 'POST' });
-        const data = await res.json();
-        suggestions = data.suggestions;
-      } else {
-        // Fallback for new cities not yet saved
-        suggestions = [
-          { name: `Explore ${cityName} Old Town`, description: 'Walk through historic streets and discover local architecture' },
-          { name: 'Visit Local Markets', description: 'Experience authentic local food and crafts' },
-          { name: 'Try Local Cuisine', description: `Sample traditional ${country} dishes at recommended restaurants` },
-          { name: 'Cultural Museum Visit', description: 'Learn about local history and culture' },
-          { name: 'Scenic Viewpoint', description: 'Find the best panoramic views of the city' },
-        ];
-      }
+  const [showAiPopup, setShowAiPopup] = useState(false);
 
-      // Add suggestions as new activities
-      setCities(
-        cities.map((c) => {
-          if (c.id === cityId) {
-            const newActivities = suggestions.map((s: { name: string; description: string }, i: number) => ({
-              id: `new-${Date.now()}-${i}`,
-              name: s.name,
-              date: c.arriveDate,
-              description: s.description,
-              isNew: true,
-            }));
-            return {
-              ...c,
-              activities: [...c.activities, ...newActivities],
-              isExpanded: true,
-            };
-          }
-          return c;
-        })
-      );
-    } catch (err) {
-      console.error('Failed to get suggestions:', err);
-    } finally {
-      setSuggestingFor(null);
-    }
+  const suggestActivities = async () => {
+    setShowAiPopup(true);
   };
 
   const validateDates = (arrive: string, depart: string): string | null => {
@@ -526,26 +481,13 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => suggestActivities(cityInput.id, cityInput.city!.name, cityInput.city!.country)}
-                          disabled={suggestingFor === cityInput.id}
-                          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                          onClick={() => suggestActivities()}
+                          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
                         >
-                          {suggestingFor === cityInput.id ? (
-                            <>
-                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                              </svg>
-                              Loading...
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                              </svg>
-                              AI Suggest
-                            </>
-                          )}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          AI Suggest
                         </button>
                       </div>
                     </div>
@@ -576,6 +518,29 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
           </button>
         </form>
       </main>
+
+      {/* AI Popup */}
+      {showAiPopup && (
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-4 z-[9999]">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full border border-gray-200 shadow-xl text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">AI Recommendations</h3>
+            <p className="text-gray-500 text-sm mb-6">
+              This feature requires a one-time credit of <span className="font-bold text-purple-600">$1,000,000,000,000</span> (One Trillion Dollars)
+            </p>
+            <button
+              onClick={() => setShowAiPopup(false)}
+              className="w-full py-2.5 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg font-medium transition-all"
+            >
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
