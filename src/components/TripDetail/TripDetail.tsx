@@ -78,10 +78,11 @@ function ConfirmModal({
 
 export function TripDetail({ trip, onClose }: TripDetailProps) {
   const { user } = useAuthStore();
-  const { deleteTrip, leaveTrip, revokeLink } = useTripStore();
+  const { deleteTrip, leaveTrip, revokeLink, duplicateTrip } = useTripStore();
   const [showConfirm, setShowConfirm] = useState<'delete' | 'leave' | 'revoke' | null>(null);
   const [copied, setCopied] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   const isCreator = user?.id === trip.creatorId;
   const shareUrl = typeof window !== 'undefined' 
@@ -106,6 +107,16 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDuplicate = async () => {
+    setIsDuplicating(true);
+    try {
+      await duplicateTrip(trip.id);
+      onClose();
+    } finally {
+      setIsDuplicating(false);
+    }
   };
 
   const handleRevoke = async () => {
@@ -285,17 +296,24 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
         </div>
       </div>
 
-      {/* Edit button */}
-      {isCreator && (
-        <div className="p-4 border-t border-gray-200">
+      {/* Action buttons */}
+      <div className="p-4 border-t border-gray-200 space-y-2">
+        {isCreator && (
           <a
             href={`/edit/${trip.id}`}
             className="block w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-center transition-colors"
           >
             Edit Trip
           </a>
-        </div>
-      )}
+        )}
+        <button
+          onClick={handleDuplicate}
+          disabled={isDuplicating}
+          className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200 disabled:opacity-50"
+        >
+          {isDuplicating ? 'Duplicating...' : 'Duplicate Trip'}
+        </button>
+      </div>
 
       {/* Modals */}
       {showConfirm === 'delete' && (
