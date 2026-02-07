@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Trip } from '@/types';
@@ -17,6 +17,8 @@ export function TripMap({ trips, selectedTripId, onSelectTrip }: TripMapProps) {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
   const polylinesRef = useRef<L.LayerGroup | null>(null);
+  const [mapStyle, setMapStyle] = useState<'light' | 'satellite'>('light');
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -32,11 +34,13 @@ export function TripMap({ trips, selectedTripId, onSelectTrip }: TripMapProps) {
     });
 
     // Light mode tiles (CartoDB Positron)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    const lightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
       subdomains: 'abcd',
       maxZoom: 20
-    }).addTo(map);
+    });
+    lightTiles.addTo(map);
+    tileLayerRef.current = lightTiles;
 
     mapInstanceRef.current = map;
     markersRef.current = L.layerGroup().addTo(map);
@@ -130,6 +134,27 @@ export function TripMap({ trips, selectedTripId, onSelectTrip }: TripMapProps) {
     }
   }, [trips, selectedTripId, onSelectTrip]);
 
+  // Handle map style changes
+  useEffect(() => {
+    if (!mapInstanceRef.current || !tileLayerRef.current) return;
+    
+    mapInstanceRef.current.removeLayer(tileLayerRef.current);
+    
+    const newTiles = mapStyle === 'satellite'
+      ? L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri',
+          maxZoom: 19
+        })
+      : L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; OpenStreetMap &copy; CARTO',
+          subdomains: 'abcd',
+          maxZoom: 20
+        });
+    
+    newTiles.addTo(mapInstanceRef.current);
+    tileLayerRef.current = newTiles;
+  }, [mapStyle]);
+
   const fitAllTrips = () => {
     if (!mapInstanceRef.current || trips.length === 0) return;
     
@@ -149,15 +174,24 @@ export function TripMap({ trips, selectedTripId, onSelectTrip }: TripMapProps) {
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" style={{ background: '#f8fafc' }} />
-      {trips.length > 1 && (
+      <div className="absolute top-3 left-3 flex gap-2 z-[1000]">
+        {trips.length > 1 && (
+          <button
+            onClick={fitAllTrips}
+            className="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-600 text-sm rounded-lg shadow border border-gray-200 transition-colors"
+            title="Fit all trips"
+          >
+            Show All
+          </button>
+        )}
         <button
-          onClick={fitAllTrips}
-          className="absolute top-3 left-3 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-600 text-sm rounded-lg shadow border border-gray-200 transition-colors z-[1000]"
-          title="Fit all trips"
+          onClick={() => setMapStyle(mapStyle === 'light' ? 'satellite' : 'light')}
+          className="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-600 text-sm rounded-lg shadow border border-gray-200 transition-colors"
+          title="Toggle map style"
         >
-          Show All
+          {mapStyle === 'light' ? 'Satellite' : 'Map'}
         </button>
-      )}
+      </div>
     </div>
   );
 }
