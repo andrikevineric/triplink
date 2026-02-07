@@ -31,8 +31,8 @@ function Earth() {
 
   return (
     <group>
-      {/* Main Earth sphere */}
-      <mesh ref={meshRef} rotation={[0, -Math.PI / 2, 0]}>
+      {/* Main Earth sphere - rotated to align texture with coordinates */}
+      <mesh ref={meshRef} rotation={[0, Math.PI * 1.5, 0]}>
         <sphereGeometry args={[1, 64, 64]} />
         <meshStandardMaterial
           map={earthTexture}

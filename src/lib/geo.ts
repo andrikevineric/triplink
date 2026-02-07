@@ -4,20 +4,23 @@ const GLOBE_RADIUS = 1;
 
 /**
  * Convert latitude/longitude to 3D position on a sphere
+ * Uses standard geographic coordinate system aligned with three-globe textures
  */
 export function latLngToVector3(
   lat: number,
   lng: number,
   altitude: number = 0
 ): THREE.Vector3 {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180);
+  // Convert to radians
+  const latRad = lat * (Math.PI / 180);
+  const lngRad = -lng * (Math.PI / 180); // Negative for correct east/west
 
   const r = GLOBE_RADIUS + altitude;
 
-  const x = -r * Math.sin(phi) * Math.cos(theta);
-  const y = r * Math.cos(phi);
-  const z = r * Math.sin(phi) * Math.sin(theta);
+  // Spherical to Cartesian conversion
+  const x = r * Math.cos(latRad) * Math.cos(lngRad);
+  const y = r * Math.sin(latRad);
+  const z = r * Math.cos(latRad) * Math.sin(lngRad);
 
   return new THREE.Vector3(x, y, z);
 }
