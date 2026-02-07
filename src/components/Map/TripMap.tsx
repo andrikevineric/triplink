@@ -9,6 +9,7 @@ interface TripMapProps {
   trips: Trip[];
   selectedTripId: string | null;
   onSelectTrip: (id: string | null) => void;
+  showFitAllButton?: boolean;
 }
 
 export function TripMap({ trips, selectedTripId, onSelectTrip }: TripMapProps) {
@@ -129,7 +130,34 @@ export function TripMap({ trips, selectedTripId, onSelectTrip }: TripMapProps) {
     }
   }, [trips, selectedTripId, onSelectTrip]);
 
+  const fitAllTrips = () => {
+    if (!mapInstanceRef.current || trips.length === 0) return;
+    
+    const allCoords: L.LatLngExpression[] = [];
+    trips.forEach(trip => {
+      trip.cities.forEach(city => {
+        allCoords.push([city.lat, city.lng]);
+      });
+    });
+    
+    if (allCoords.length > 0) {
+      const bounds = L.latLngBounds(allCoords);
+      mapInstanceRef.current.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
+    }
+  };
+
   return (
-    <div ref={mapRef} className="w-full h-full" style={{ background: '#f8fafc' }} />
+    <div className="relative w-full h-full">
+      <div ref={mapRef} className="w-full h-full" style={{ background: '#f8fafc' }} />
+      {trips.length > 1 && (
+        <button
+          onClick={fitAllTrips}
+          className="absolute top-3 left-3 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-600 text-sm rounded-lg shadow border border-gray-200 transition-colors z-[1000]"
+          title="Fit all trips"
+        >
+          Show All
+        </button>
+      )}
+    </div>
   );
 }
