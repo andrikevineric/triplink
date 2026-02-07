@@ -5,6 +5,7 @@ import { Trip } from '@/types';
 import { useTripStore } from '@/stores/tripStore';
 import { useAuthStore } from '@/stores/authStore';
 import { calculateDistance, formatDistance } from '@/lib/geo';
+import { downloadICal } from '@/lib/ical';
 
 interface TripDetailProps {
   trip: Trip;
@@ -326,6 +327,12 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
           className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200 disabled:opacity-50"
         >
           {isDuplicating ? 'Duplicating...' : 'Duplicate Trip'}
+        </button>
+        <button
+          onClick={() => downloadICal(trip)}
+          className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200"
+        >
+          Export to Calendar
         </button>
       </div>
 
