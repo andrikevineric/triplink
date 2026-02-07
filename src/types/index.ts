@@ -14,6 +14,7 @@ export interface City {
   arriveDate: string;
   departDate?: string;
   order: number;
+  notes?: string;
 }
 
 export interface TripMember {
