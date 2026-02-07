@@ -6,6 +6,7 @@ import { useTripStore } from '@/stores/tripStore';
 import { useAuthStore } from '@/stores/authStore';
 import { calculateDistance, formatDistance } from '@/lib/geo';
 import { downloadICal } from '@/lib/ical';
+import { exportTripToPDF } from '@/lib/pdf';
 
 interface TripDetailProps {
   trip: Trip;
@@ -439,6 +440,12 @@ export function TripDetail({ trip, onClose }: TripDetailProps) {
           className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200"
         >
           Export to Calendar
+        </button>
+        <button
+          onClick={() => exportTripToPDF(trip)}
+          className="w-full py-3 bg-white hover:bg-gray-50 text-gray-600 rounded-lg font-medium transition-colors border border-gray-200"
+        >
+          Export to PDF
         </button>
       </div>
 
