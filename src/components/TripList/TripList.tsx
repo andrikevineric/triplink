@@ -6,6 +6,7 @@ import { Trip } from '@/types';
 interface TripListProps {
   trips: Trip[];
   onSelectTrip: (id: string) => void;
+  onCreateTrip?: () => void;
 }
 
 type Filter = 'all' | 'upcoming' | 'past';
@@ -22,7 +23,7 @@ function getTripStatus(trip: Trip) {
   return 'upcoming';
 }
 
-export function TripList({ trips, onSelectTrip }: TripListProps) {
+export function TripList({ trips, onSelectTrip, onCreateTrip }: TripListProps) {
   const [filter, setFilter] = useState<Filter>('all');
 
   const { filteredTrips, counts } = useMemo(() => {
@@ -65,26 +66,39 @@ export function TripList({ trips, onSelectTrip }: TripListProps) {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Filter tabs */}
-      <div className="flex gap-2 p-4 border-b border-gray-200">
-        {filters.map((f) => (
+      {/* Filter tabs + New Trip button */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex gap-2">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`px-3 py-1.5 rounded-full text-sm transition-colors flex items-center gap-1.5 ${
+                filter === f.key
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {f.label}
+              {f.count !== undefined && (
+                <span className={`text-xs ${filter === f.key ? 'text-blue-100' : 'text-gray-400'}`}>
+                  {f.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        {onCreateTrip && (
           <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`px-3 py-1.5 rounded-full text-sm transition-colors flex items-center gap-1.5 ${
-              filter === f.key
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            onClick={onCreateTrip}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full text-sm font-medium transition-colors"
           >
-            {f.label}
-            {f.count !== undefined && (
-              <span className={`text-xs ${filter === f.key ? 'text-blue-100' : 'text-gray-400'}`}>
-                {f.count}
-              </span>
-            )}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Trip
           </button>
-        ))}
+        )}
       </div>
 
       {/* Trip list */}
