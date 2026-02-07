@@ -16,7 +16,6 @@ export function CitySearch({ value, onChange }: CitySearchProps) {
   const timeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -27,7 +26,6 @@ export function CitySearch({ value, onChange }: CitySearchProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Debounced search
   useEffect(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -71,17 +69,19 @@ export function CitySearch({ value, onChange }: CitySearchProps) {
 
   if (value) {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg">
+      <div className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-lg">
         <div className="flex-1">
-          <p className="font-medium">{value.name}</p>
-          <p className="text-sm text-slate-400">{value.country}</p>
+          <p className="font-medium text-gray-900">{value.name}</p>
+          <p className="text-sm text-gray-500">{value.country}</p>
         </div>
         <button
           type="button"
           onClick={handleClear}
-          className="text-slate-500 hover:text-slate-300"
+          className="text-gray-400 hover:text-gray-600 transition-colors"
         >
-          ×
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
     );
@@ -98,25 +98,25 @@ export function CitySearch({ value, onChange }: CitySearchProps) {
         }}
         onFocus={() => setIsOpen(true)}
         placeholder="Search for a city..."
-        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-primary"
+        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
       />
 
       {isOpen && (query.length >= 2 || results.length > 0) && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
           {isLoading ? (
-            <div className="px-4 py-3 text-slate-400 text-sm">Searching...</div>
+            <div className="px-4 py-3 text-gray-500 text-sm">Searching...</div>
           ) : results.length === 0 ? (
-            <div className="px-4 py-3 text-slate-400 text-sm">No cities found</div>
+            <div className="px-4 py-3 text-gray-500 text-sm">No cities found</div>
           ) : (
             results.map((city, index) => (
               <button
                 key={index}
                 type="button"
                 onClick={() => handleSelect(city)}
-                className="w-full text-left px-4 py-3 hover:bg-slate-700 border-b border-slate-700 last:border-0"
+                className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
               >
-                <p className="font-medium">{city.name}</p>
-                <p className="text-sm text-slate-400">{city.country}</p>
+                <p className="font-medium text-gray-900">{city.name}</p>
+                <p className="text-sm text-gray-500">{city.country}</p>
               </button>
             ))
           )}
